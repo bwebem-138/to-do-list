@@ -17,10 +17,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application files
 COPY app/ .
 
-# Set Flask environment variables
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=development
-ENV FLASK_DEBUG=1
+# Create SSL directory
+RUN mkdir -p /app/ssl
 
-# Run the Flask application
-CMD ["python", "app.py"]
+# Use Gunicorn with SSL
+CMD ["gunicorn", \
+     "--bind", "0.0.0.0:80", \
+     "--bind", "0.0.0.0:443", \
+     "--certfile", "/app/ssl/cert.pem", \
+     "--keyfile", "/app/ssl/key.pem", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "app:app"]

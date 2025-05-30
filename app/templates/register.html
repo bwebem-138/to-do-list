@@ -1,22 +1,36 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<div class="auth-container">
-    <h1>Register</h1>
+<div class="form-container">
+    <h2>Register</h2>
     <form method="POST" action="{{ url_for('register') }}">
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
         </div>
-        <div class="form-group">
+        <div>
+            <label for="name">Display Name:</label>
+            <input type="text" id="name" name="name" pattern="[A-Za-z\s]{2,}" title="Name must contain only letters and spaces" required>
+        </div>
+        <div>
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" required
+                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?:{}|<>])[A-Za-z\d!@#$%^&*(),.?:{}|<>]{12,}$"
+                   title="Password must be at least 12 characters and contain uppercase, lowercase, numbers and special characters">
         </div>
-        <div class="form-group">
-            <button type="submit">Register</button>
+        <div class="password-requirements">
+            <p>Password must contain:</p>
+            <ul>
+                <li>At least 12 characters</li>
+                <li>Uppercase letters (A-Z)</li>
+                <li>Lowercase letters (a-z)</li>
+                <li>Numbers (0-9)</li>
+                <li>Special characters (!@#$%^&*(),.?:{}|<>)</li>
+            </ul>
         </div>
+        <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
 </div>

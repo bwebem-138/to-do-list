@@ -31,18 +31,21 @@ services:
     networks:
       - todo_net
 
-  web:
+  app:
     build: .
     container_name: todo_flask
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       - ./app:/app
-    ports:
-      - "5000:5000"
+      - ./ssl:/app/ssl:ro
     environment:
       MYSQL_HOST: mariadb
       MYSQL_USER: todo_user
       MYSQL_PASSWORD: todopass123
       MYSQL_DATABASE: todo_db
+      FLASK_ENV: production
     depends_on:
       mariadb:
         condition: service_healthy

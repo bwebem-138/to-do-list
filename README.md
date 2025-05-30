@@ -1,6 +1,6 @@
 # 🔒 Secure Todo List Application
 
-A secure task management application built with Flask and MariaDB, featuring encrypted data storage and user authentication.
+A secure task management application built with Flask and MariaDB, featuring encrypted data storage, user authentication, and HTTPS support.
 
 ## ⚠️ Security Notice
 
@@ -16,7 +16,8 @@ A secure task management application built with Flask and MariaDB, featuring enc
 2. Update these security-critical files:
    - `docker-compose.yml`: Database passwords
    - `config/mysql/encryption/keyfile`: Encryption key
-   - `app.py`: Flask secret key
+   - `.env`: Environment variables
+   - SSL certificates
 
 ## 🎯 Features
 
@@ -24,6 +25,7 @@ A secure task management application built with Flask and MariaDB, featuring enc
 - 🔐 Encrypted data storage
 - 📝 Task management
 - 👤 User account controls
+- 🔒 HTTPS support
 - 🐳 Docker deployment
 
 ## 🛠️ Technology Stack
@@ -32,6 +34,8 @@ A secure task management application built with Flask and MariaDB, featuring enc
 |-----------|------------|
 | Backend | Python/Flask |
 | Database | MariaDB (Encrypted) |
+| Server | Gunicorn |
+| SSL | Self-signed |
 | Containerization | Docker |
 | Frontend | HTML/CSS |
 
@@ -76,7 +80,7 @@ docker-compose up --build
 ## 🏗️ Project Structure
 
 ```
-To-Do-List/
+to-do-list/
 ├── app/
 │   ├── static/
 │   │   └── styles.css
@@ -92,20 +96,57 @@ To-Do-List/
 │   │   └── encryption/
 │   │       └── keyfile
 │   └── encryption.cnf
+├── ssl/                    # SSL certificates
+│   ├── cert.pem            # Public certificate
+│   ├── certificate.pfx     # PKCS#12 bundle
+│   └── key.pem             # Private key
 ├── database.sql
 ├── docker-compose.yml
 ├── Dockerfile
-├── .env              # Optional: Environment variables
-├── .gitignore        # Optional: Git ignore rules
+├── generate-certs.ps1      # Certificate generation script (make sure openssl is installed)
+├── .env                    # Optional (recomended): Environment variables
+├── .gitignore              # Git ignore rules
 └── README.md
 ```
 
-## 🔒 Security Features
+## 🚀 Quick Start
 
-- Password hashing with Werkzeug
-- BLOB data encryption
-- Database-level encryption
-- Secure session management
+1. Clone the repository
+2. Generate SSL certificates:
+   ```powershell
+   ./init-ssl.sh
+   ```
+
+3. Set up environment variables:
+   ```powershell
+   Copy-Item .env.example .env
+   # Edit .env with your values
+   ```
+
+4. Start the application:
+   ```powershell
+   docker-compose up --build
+   ```
+
+## 🔒 SSL Configuration
+
+- Development: Self-signed certificates
+- Production: Let's Encrypt certificates via Certbot
+
+## 🌐 Access
+
+- HTTP: http://localhost:80
+- HTTPS: https://localhost:443
+- Domain: https://todolists.ch (if configured)
+
+## ⚙️ Environment Variables
+
+Required variables in `.env`:
+- `MYSQL_ROOT_PASSWORD`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+- `MYSQL_DATABASE`
+- `FLASK_SECRET_KEY`
 
 ## ⚠️ Disclaimer
 

@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import mysql.connector
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+import hashlib
+import re
+from email_validator import validate_email, EmailNotValidError
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -13,6 +16,9 @@ def get_db_connection():
         password=os.environ.get('MYSQL_PASSWORD', 'todopass123'),
         database=os.environ.get('MYSQL_DATABASE', 'todo_db')
     )
+
+def hash_username(username):
+    return hashlib.sha256(username.lower().encode('utf-8')).hexdigest()
 
 @app.route('/')
 def index():
@@ -85,22 +91,33 @@ def delete(task_id):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username'].encode('utf-8')
+        email = request.form['email']
         password = request.form['password']
+        name = request.form['name']
+        
+        # Validate input
+        is_valid, message = validate_user_input(email, password, name)
+        if not is_valid:
+            flash(message, 'error')
+            return render_template('register.html')
+        
+        # Hash email for storage
+        email_hash = hash_username(email)  # Reusing existing hash function
+        display_name = name.encode('utf-8')
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Check if username exists
-        cursor.callproc('get_user_by_username', [username])
+        # Check if email hash exists
+        cursor.callproc('get_user_by_email_hash', [email_hash])
         for result in cursor.stored_results():
             if result.fetchone():
-                flash('Username already exists', 'error')
+                flash('Email already registered', 'error')
                 return render_template('register.html')
         
-        # Create new user with hashed password
         hashed_password = generate_password_hash(password).encode('utf-8')
-        cursor.callproc('create_user', [username, hashed_password])
+        # Modified stored procedure to include email_hash and display_name
+        cursor.callproc('create_user', [email_hash, display_name, hashed_password])
         conn.commit()
         
         cursor.close()
@@ -114,27 +131,29 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username'].encode('utf-8')
+        email = request.form['email']
         password = request.form['password']
+        
+        # Hash email for lookup
+        email_hash = hash_username(email)
         
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        cursor.callproc('get_user_by_username', [username])
+        cursor.callproc('get_user_by_email_hash', [email_hash])
         user = None
         for result in cursor.stored_results():
             user = result.fetchone()
         
         if user:
-            # Decode the stored hash before checking
             stored_password = user['password'].decode('utf-8')
             if check_password_hash(stored_password, password):
                 session['user_id'] = user['id']
-                session['username'] = user['username'].decode('utf-8')
+                session['display_name'] = user['display_name'].decode('utf-8')
                 flash('Welcome back!', 'success')
                 return redirect(url_for('tasks'))
         
-        flash('Invalid username or password', 'error')
+        flash('Invalid email or password', 'error')
         cursor.close()
         conn.close()
     
@@ -162,5 +181,45 @@ def delete_account():
     flash('Your account has been deleted', 'info')
     return redirect(url_for('login'))
 
+def validate_password(password):
+    """Password must be at least 12 characters and contain upper, lower, number and special char"""
+    if len(password) < 12:
+        return False, "Password must be at least 12 characters long"
+    
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter"
+    
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter"
+    
+    if not re.search(r"\d", password):
+        return False, "Password must contain at least one number"
+    
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        return False, "Password must contain at least one special character"
+    
+    return True, "Password is valid"
+
+def validate_user_input(email, password, name):
+    try:
+        # Validate email
+        email_info = validate_email(email, check_deliverability=False)
+        email = email_info.normalized
+        
+        # Validate password
+        is_valid_password, password_message = validate_password(password)
+        if not is_valid_password:
+            return False, password_message
+        
+        # Validate name (at least 2 characters, only letters and spaces)
+        if not re.match(r"^[A-Za-z\s]{2,}$", name):
+            return False, "Name must contain only letters and spaces, and be at least 2 characters long"
+        
+        return True, "All inputs are valid"
+    
+    except EmailNotValidError as e:
+        return False, str(e)
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    # Remove debug mode and use production settings
+    app.run(host='0.0.0.0', debug=False)

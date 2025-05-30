@@ -1,16 +1,10 @@
--- Enable encryption settings
---SET GLOBAL innodb_encrypt_tables = 1;
---SET GLOBAL innodb_encrypt_log = 1;
---SET GLOBAL innodb_encrypt_temporary_tables = 1;
---SET GLOBAL innodb_encryption_threads = 4;
-
 -- Create encrypted database
 CREATE DATABASE IF NOT EXISTS todo_db;
 USE todo_db;
 
 -- Drop procedures if they exist
 DROP PROCEDURE IF EXISTS create_user;
-DROP PROCEDURE IF EXISTS get_user_by_username;
+DROP PROCEDURE IF EXISTS get_user_by_email_hash;
 DROP PROCEDURE IF EXISTS get_tasks;
 DROP PROCEDURE IF EXISTS add_task;
 DROP PROCEDURE IF EXISTS delete_task;
@@ -20,7 +14,8 @@ DROP PROCEDURE IF EXISTS delete_account;
 -- Create tables
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username BLOB UNIQUE NOT NULL,
+    email_hash VARCHAR(255) NOT NULL UNIQUE,
+    display_name BLOB NOT NULL,
     password BLOB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -37,14 +32,19 @@ CREATE TABLE IF NOT EXISTS tasks (
 -- Create stored procedures
 DELIMITER //
 
-CREATE PROCEDURE create_user(IN p_username BLOB, IN p_password BLOB)
+CREATE PROCEDURE create_user(
+    IN p_email_hash VARCHAR(255),
+    IN p_display_name BLOB,
+    IN p_password BLOB
+)
 BEGIN
-    INSERT INTO users (username, password) VALUES (p_username, p_password);
+    INSERT INTO users (email_hash, display_name, password)
+    VALUES (p_email_hash, p_display_name, p_password);
 END //
 
-CREATE PROCEDURE get_user_by_username(IN p_username BLOB)
+CREATE PROCEDURE get_user_by_email_hash(IN p_email_hash VARCHAR(255))
 BEGIN
-    SELECT * FROM users WHERE username = p_username;
+    SELECT * FROM users WHERE email_hash = p_email_hash;
 END //
 
 CREATE PROCEDURE toggle_task(IN p_task_id INT)

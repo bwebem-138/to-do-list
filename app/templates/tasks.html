@@ -4,7 +4,7 @@
 
 {% block content %}
 <header>
-    <h1>Welcome, {{ username }}</h1>
+    <h1>Welcome, {{ session.get('display_name', 'Guest') }}</h1>
     <div class="header-buttons">
         <button onclick="confirmDeleteAccount()" class="delete-account-btn">Delete Account</button>
         <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
