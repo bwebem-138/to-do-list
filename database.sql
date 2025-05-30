@@ -8,56 +8,53 @@
 CREATE DATABASE IF NOT EXISTS todo_db;
 USE todo_db;
 
--- Create encrypted users table
-CREATE TABLE users (
+-- Drop procedures if they exist
+DROP PROCEDURE IF EXISTS create_user;
+DROP PROCEDURE IF EXISTS get_user_by_username;
+DROP PROCEDURE IF EXISTS get_tasks;
+DROP PROCEDURE IF EXISTS add_task;
+DROP PROCEDURE IF EXISTS delete_task;
+
+-- Create tables
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(64) NOT NULL
 );
 
--- Create encrypted tasks table
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_email VARCHAR(255) NOT NULL,
-    task TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-
+-- Create stored procedures
 DELIMITER //
 
-CREATE PROCEDURE RegisterUser(IN user_email VARCHAR(255), IN user_password VARCHAR(255))
+CREATE PROCEDURE create_user(IN p_username VARCHAR(255), IN p_password VARCHAR(64))
 BEGIN
-    INSERT INTO users (email, password) VALUES (user_email, user_password);
+    INSERT INTO users (username, password) VALUES (p_username, p_password);
 END //
 
-CREATE PROCEDURE AuthenticateUser(IN user_email VARCHAR(255))
+CREATE PROCEDURE get_user_by_username(IN p_username VARCHAR(255))
 BEGIN
-    SELECT password FROM users WHERE email = user_email;
+    SELECT * FROM users WHERE username = p_username;
 END //
 
-CREATE PROCEDURE GetTasks(IN user_email VARCHAR(255))
+CREATE PROCEDURE get_tasks(IN p_user_id INT)
 BEGIN
-    SELECT id, task FROM tasks WHERE user_email = user_email;
+    SELECT * FROM tasks WHERE user_id = p_user_id;
 END //
 
-CREATE PROCEDURE AddTask(IN user_email VARCHAR(255), IN task_text TEXT)
+CREATE PROCEDURE add_task(IN p_user_id INT, IN p_title VARCHAR(255))
 BEGIN
-    INSERT INTO tasks (user_email, task) VALUES (user_email, task_text);
+    INSERT INTO tasks (user_id, title) VALUES (p_user_id, p_title);
 END //
 
-CREATE PROCEDURE DeleteTask(IN task_id INT)
+CREATE PROCEDURE delete_task(IN p_task_id INT)
 BEGIN
-    DELETE FROM tasks WHERE id = task_id;
-END //
-
-CREATE PROCEDURE DeleteUser(IN user_email VARCHAR(255))
-BEGIN
-    DELETE FROM users WHERE email = user_email;
-    DELETE FROM tasks WHERE user_email = user_email;
+    DELETE FROM tasks WHERE id = p_task_id;
 END //
 
 DELIMITER ;

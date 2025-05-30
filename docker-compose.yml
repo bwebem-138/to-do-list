@@ -18,9 +18,11 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-uroot", "-prootpassword123"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword123"]
+      interval: 10s
+      timeout: 5s
       retries: 5
-      interval: 5s
+    restart: unless-stopped
     networks:
       - todo_net
 
@@ -34,10 +36,13 @@ services:
         condition: service_healthy
     ports:
       - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
     networks:
       - todo_net
     volumes:
-      - ./:/todolist
+      - ./app:/app
+    restart: unless-stopped
 
 volumes:
   mariadb_data:

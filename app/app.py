@@ -1,118 +1,195 @@
-from flask import Flask, render_template, request, redirect, session
-import mariadb
-import bcrypt
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+import mysql.connector
+import hashlib
 import os
+import logging
 
-# Create Flask app
-app = Flask(__name__, template_folder="/todolist/templates", static_folder="/todolist/static")
+# Fix the template_folder path - it should be relative
+app = Flask(__name__, template_folder='templates')  # Note: changed from 'template' to 'templates'
 app.secret_key = os.urandom(24)
 
-# Connect to the database
-conn = mariadb.connect(
-    host="mariadb",
-    port=3306,
-    user="todo_user",
-    password="todopass123",
-    database="todo_db"
-)
-cursor = conn.cursor()
+# Update the database configuration to match docker-compose.yml
+db_config = {
+    'host': 'mariadb',  # Update to match container name in docker-compose
+    'user': 'todo_user',
+    'password': 'todopass123',  # Update to match docker-compose
+    'database': 'todo_db'
+}
 
-# Default route
-@app.route("/")
-def default_route():
-    return redirect('/login')
+# Hilfsfunktion für die Verbindung zur DB
+def get_db_connection():
+    return mysql.connector.connect(**db_config)
 
-# Register
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+# Passwort mit SHA-256 hashen
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-        hashed_email = bcrypt.hashpw(email.encode(), bcrypt.gensalt())
-        hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+# Add logging configuration
+logging.basicConfig(level=logging.DEBUG)
 
-        cursor.execute("CALL RegisterUser(%s, %s)", (hashed_email, hashed_pw))
-        conn.commit()
-
-        return redirect('/login')
-
-    return render_template('register.html')
-
-# Login
+# ========================================
+# Route: Startseite / Login
+# ========================================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        # Add validation for form data
+        if 'username' not in request.form or 'password' not in request.form:
+            flash('Please provide both username and password')
+            return redirect(url_for('login'))
+            
+        username = request.form['username']
+        password = hash_password(request.form['password'])
 
-        cursor.execute("CALL AuthenticateUser(%s)", (email,))
-        user = cursor.fetchone()
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.callproc('get_user_by_username', [username])
+            
+            user = None
+            for result in cursor.stored_results():
+                user = result.fetchone()
 
-        if user and bcrypt.checkpw(password.encode(), user[1].encode()):
-            session['user'] = email
-            return redirect('/todo')
+            if user and user['password'] == password:
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                return redirect(url_for('tasks'))
+            else:
+                flash('Invalid username or password')
+                return redirect(url_for('login'))
+
+        except Exception as e:
+            app.logger.error(f"Database error: {str(e)}")
+            flash('An error occurred. Please try again later.')
+            return redirect(url_for('login'))
+        finally:
+            cursor.close()
+            conn.close()
 
     return render_template('login.html')
 
-# Logout
+# ========================================
+# Route: Registrierung
+# ========================================
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        # Validate form data
+        if 'username' not in request.form or 'password' not in request.form:
+            flash('Please provide both username and password')
+            return redirect(url_for('register'))
+        
+        username = request.form['username']
+        password = request.form['password']
+        
+        # Validate input
+        if not username or not password:
+            flash('Username and password cannot be empty')
+            return redirect(url_for('register'))
+            
+        # Hash password
+        hashed_password = hash_password(password)
+
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.callproc('create_user', [username, hashed_password])
+            conn.commit()
+            flash('Registration successful! Please login.')
+            return redirect(url_for('login'))
+
+        except mysql.connector.Error as e:
+            app.logger.error(f"Database error: {str(e)}")
+            flash('Registration failed. Username may already exist.')
+            return redirect(url_for('register'))
+        finally:
+            cursor.close()
+            conn.close()
+
+    return render_template('register.html')
+
+# ========================================
+# Route: Aufgabenliste anzeigen
+# ========================================
+@app.route('/tasks')
+def tasks():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.callproc('get_tasks', [user_id])
+
+        tasks = []
+        for result in cursor.stored_results():
+            tasks = result.fetchall()
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return render_template('tasks.html', tasks=tasks, username=session.get('username'))
+
+# ========================================
+# Route: Aufgabe hinzufügen
+# ========================================
+@app.route('/add', methods=['POST'])
+def add():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    title = request.form['title']
+    user_id = session['user_id']
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.callproc('add_task', [user_id, title])
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('tasks'))
+
+# ========================================
+# Route: Aufgabe löschen
+# ========================================
+@app.route('/delete/<int:task_id>')
+def delete(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.callproc('delete_task', [task_id])
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('tasks'))
+
+# ========================================
+# Route: Logout
+# ========================================
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
-    return redirect('/login')
+    session.clear()
+    return redirect(url_for('login'))
 
-# Task management
-@app.route('/todo', methods=['GET', 'POST'])
-def todo():
-    if 'user' not in session:
-        return redirect('/login')
+# ========================================
+# Add a root route that redirects to login
+# ========================================
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
 
-    cursor.execute("CALL GetTasks(%s)", (session['user'],))
-    tasks = cursor.fetchall()
-
-    return render_template('todo.html', tasks=tasks)
-
-@app.route('/add_task', methods=['POST'])
-def add_task():
-    if 'user' not in session:
-        return redirect('/login')
-
-    task = request.form['task']
-    cursor.execute("CALL AddTask(%s, %s)", (session['user'], task))
-    conn.commit()
-
-    return redirect('/todo')
-
-@app.route('/delete_task/<int:task_id>')
-def delete_task(task_id):
-    if 'user' not in session:
-        return redirect('/login')
-
-    cursor.execute("CALL DeleteTask(%s)", (task_id,))
-    conn.commit()
-
-    return redirect('/todo')
-
-@app.route('/delete_account', methods=['GET', 'POST'])
-def delete_account():
-    if 'user' not in session:
-        return redirect('/login')
-
-    if request.method == 'POST':
-        password = request.form['password']
-
-        # Fetch the hashed password from DB
-        cursor.execute("CALL AuthenticateUser(%s)", (session['user'],))
-        user = cursor.fetchone()
-
-        # Verify the password before deletion
-        if user and bcrypt.checkpw(password.encode(), user[1].encode()):
-            cursor.execute("CALL DeleteUser(%s)", (session['user'],))
-            conn.commit()
-            session.pop('user', None)
-            return redirect('/register')
-
-    return render_template('delete_account.html')
-
+# ========================================
+# Main
+# ========================================
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5000)
