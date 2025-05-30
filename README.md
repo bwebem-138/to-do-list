@@ -76,7 +76,7 @@ docker-compose up --build
 ## 🏗️ Project Structure
 
 ```
-Open_Source_Project/
+To-Do-List/
 ├── app/
 │   ├── static/
 │   │   └── styles.css

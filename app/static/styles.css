@@ -26,7 +26,7 @@ label {
 
 button {
     padding: 8px 15px;
-    background-color: #4CAF50;
+    background-color: #6B46C1; /* Changed to purple */
     color: white;
     border: none;
     border-radius: 4px;
@@ -34,7 +34,7 @@ button {
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #553C9A; /* Darker purple */
 }
 
 .task-list {
@@ -47,7 +47,7 @@ button:hover {
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background-color: #f8f9fa;
+    background-color: #F3E8FF; /* Light purple background */
     margin-bottom: 5px;
     border-radius: 4px;
 }
@@ -63,6 +63,7 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    border-bottom: 2px solid #9F7AEA; /* Purple border */
 }
 
 .logout-btn {
@@ -96,7 +97,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background-color: #f8f9fa;
+    background-color: #F3E8FF; /* Light purple */
     margin-bottom: 5px;
     border-radius: 4px;
 }
@@ -129,17 +130,17 @@ header {
 }
 
 .completed {
-    background-color: #e9ecef;
+    background-color: #E9D8FD; /* Different shade of light purple */
 }
 
 .completed span {
     text-decoration: line-through;
-    color: #6c757d;
+    color: #805AD5; /* Medium purple */
 }
 
 h2 {
     margin: 20px 0 10px;
-    color: #495057;
+    color: #553C9A; /* Dark purple */
     font-size: 1.2em;
 }
 
