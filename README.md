@@ -2,20 +2,6 @@
 
 A secure task management application built with Flask and MariaDB, featuring encrypted data storage, user authentication, and HTTPS support.
 
-## ⚠️ Security Notice
-
-**CRITICAL:** Before deploying this application:
-
-1. Run the initialization script to generate secure credentials:
-   ```powershell
-   .\generate-env.ps1
-   ```
-   This script will:
-   - Generate secure random passwords
-   - Create the encryption keyfile
-   - Set up MariaDB encryption configuration
-   - Generate the .env file with all required variables
-
 ## 🎯 Features
 
 - ✅ Secure user authentication
@@ -36,6 +22,17 @@ A secure task management application built with Flask and MariaDB, featuring enc
 | Containerization | Docker |
 | Frontend | HTML/CSS |
 
+## ⚠️ Security Notice
+
+**CRITICAL:** Before deploying this application, run the automated setup script which will:
+- Generate secure random passwords
+- Create the encryption keyfile
+- Set up MariaDB encryption configuration
+- Generate the .env file with all required variables
+- Create self-signed SSL certificates
+- Configure HTTPS support
+- Start Docker containers
+
 ## 📦 Installation
 
 1. Clone the repository:
@@ -44,20 +41,34 @@ A secure task management application built with Flask and MariaDB, featuring enc
    cd to-do-list
    ```
 
-2. Generate security configuration:
-   ```powershell
-   .\generate-env.ps1
+2. Run the setup script as Administrator:
+   ```powershell (admin)
+   .\setup-automated.ps1
    ```
 
-3. Generate SSL certificates:
-   ```powershell
-   .\generate-certs.ps1
-   ```
+   ⚠️ **Important Setup Notes:**
+   - Pay careful attention to the certificate password when it's displayed
+   - Copy the password exactly as shown - it will be needed for the 'Import Password' prompt
+   - If you enter the wrong password, delete the `ssl` folder and `.env` file, then run the setup script again
 
-4. Start the application:
-   ```powershell
-   docker compose up --build
-   ```
+   🐳 **Docker Container Notes:**
+   - The initial `docker compose up` might show an error for `todo_mariadb` - this is normal
+   - The database container needs time to initialize before the web container can connect
+   - After setup completes, manually restart the web container:
+     ```powershell
+     docker compose up -d todo_flask
+     ```
+
+3. Access the application:
+   - Open https://localhost:443 in your browser
+   - Use the generated credentials from your `.env` file
+
+## 🔑 Certificate Management
+
+If you need to regenerate certificates:
+1. Delete the `ssl` folder and `.env` file
+2. Run `.\setup-automated.ps1` again
+3. Make sure to save the new certificate password when it's displayed
 
 ## 🏗️ Project Structure
 
@@ -116,9 +127,12 @@ FLASK_HOST=0.0.0.0
 FLASK_PORT=443
 
 # SSL Configuration
-SSL_CERT_PATH=/app/ssl/cert.pem
-SSL_KEY_PATH=/app/ssl/key.pem
-SSL_PFX_PATH=/app/ssl/certificate.pfx
+SSL_CERT_PATH=/ssl/cert.pem
+SSL_KEY_PATH=/ssl/key.pem
+SSL_PFX_PATH=/ssl/certificate.pfx
+CERT_PASSWORD=<generated>
+CERT_DOMAIN=todolist.ch
+CERT_FRIENDLY_NAME=todolist.ch SSL Certificate
 
 # Encryption Configuration
 DB_ENCRYPTION_KEY=<generated>
