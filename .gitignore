@@ -1,9 +1,21 @@
+# Python related
 __pycache__/
 venv/
 ENV/
+
+# SSL/TLS Certificates and Keys
 /ssl/
 *.pem
 *.pfx
 *.key
 *.crt
+
+# Environment Variables
 .env
+
+# SSL Certificate Directory
+ssl/*.pem
+ssl/*.pfx
+
+# Database Security
+config/mysql/encryption/keyfile

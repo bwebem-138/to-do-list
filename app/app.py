@@ -5,9 +5,30 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import hashlib
 import re
 from email_validator import validate_email, EmailNotValidError
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+
+# Configuration from environment variables
+app.config.update(
+    SECRET_KEY=os.getenv('FLASK_SECRET_KEY'),
+    MYSQL_HOST=os.getenv('MYSQL_HOST', 'db'),
+    MYSQL_USER=os.getenv('MYSQL_USER'),
+    MYSQL_PASSWORD=os.getenv('MYSQL_PASSWORD'),
+    MYSQL_DB=os.getenv('MYSQL_DATABASE'),
+    SSL_CERT_PATH=os.getenv('SSL_CERT_PATH'),
+    SSL_KEY_PATH=os.getenv('SSL_KEY_PATH'),
+    DB_ENCRYPTION_KEY=os.getenv('DB_ENCRYPTION_KEY')
+)
+
+# SSL configuration
+ssl_context = (
+    app.config['SSL_CERT_PATH'],
+    app.config['SSL_KEY_PATH']
+)
 
 def get_db_connection():
     return mysql.connector.connect(

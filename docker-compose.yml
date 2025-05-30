@@ -4,14 +4,14 @@ networks:
   todo_net:
 
 services:
-  mariadb:
+  db:
     image: mariadb:latest
     container_name: todo_mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword123
-      MYSQL_DATABASE: todo_db
-      MYSQL_USER: todo_user
-      MYSQL_PASSWORD: todopass123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ./database.sql:/docker-entrypoint-initdb.d/database.sql:ro
       - mariadb_data:/var/lib/mysql
@@ -24,30 +24,35 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword123"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - todo_net
 
-  app:
+  web:
     build: .
     container_name: todo_flask
     ports:
-      - "80:80"
+      - "${FLASK_PORT}:${FLASK_PORT}"
       - "443:443"
     volumes:
       - ./app:/app
       - ./ssl:/app/ssl:ro
     environment:
-      MYSQL_HOST: mariadb
-      MYSQL_USER: todo_user
-      MYSQL_PASSWORD: todopass123
-      MYSQL_DATABASE: todo_db
-      FLASK_ENV: production
+      - FLASK_APP=${FLASK_APP}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
+      - FLASK_DEBUG=${FLASK_DEBUG}
+      - MYSQL_HOST=db
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - DB_ENCRYPTION_KEY=${DB_ENCRYPTION_KEY}
+      - SSL_CERT_PATH=/app/ssl/cert.pem
+      - SSL_KEY_PATH=/app/ssl/key.pem
     depends_on:
-      mariadb:
+      db:
         condition: service_healthy
     networks:
       - todo_net
