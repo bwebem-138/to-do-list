@@ -114,7 +114,7 @@ to-do-list/
 1. Clone the repository
 2. Generate SSL certificates:
    ```powershell
-   ./init-ssl.sh
+   ./generate-certs.ps1
    ```
 
 3. Set up environment variables:
@@ -137,7 +137,7 @@ to-do-list/
 
 - HTTP: http://localhost:80
 - HTTPS: https://localhost:443
-- Domain: https://todolists.ch (if configured)
+- Domain: https://todolist.ch (if configured)
 
 ## ⚙️ Environment Variables
 
