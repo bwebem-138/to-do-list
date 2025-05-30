@@ -15,6 +15,12 @@ services:
     volumes:
       - ./database.sql:/docker-entrypoint-initdb.d/database.sql:ro
       - mariadb_data:/var/lib/mysql
+      - ./config/mysql/encryption:/etc/mysql/encryption:ro
+      - ./config/encryption.cnf:/etc/mysql/conf.d/encryption.cnf:ro
+    command: 
+      - --plugin-load-add=file_key_management
+      - --file-key-management
+      - --file-key-management-filename=/etc/mysql/encryption/keyfile
     ports:
       - "3306:3306"
     healthcheck:
@@ -22,27 +28,27 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
     networks:
       - todo_net
 
-  python_app:
-    build:
-      context: ./app
-      dockerfile: Dockerfile
-    container_name: todo_python
-    depends_on:
-      mariadb:
-        condition: service_healthy
+  web:
+    build: .
+    container_name: todo_flask
+    volumes:
+      - ./app:/app
     ports:
       - "5000:5000"
     environment:
-      - PYTHONUNBUFFERED=1
+      MYSQL_HOST: mariadb
+      MYSQL_USER: todo_user
+      MYSQL_PASSWORD: todopass123
+      MYSQL_DATABASE: todo_db
+    depends_on:
+      mariadb:
+        condition: service_healthy
     networks:
       - todo_net
-    volumes:
-      - ./app:/app
-    restart: unless-stopped
 
 volumes:
   mariadb_data:
+    driver: local

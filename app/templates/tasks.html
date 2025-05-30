@@ -1,37 +1,75 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Todo List</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Welcome, {{ username }}</h1>
-            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
-        </header>
+{% extends "base.html" %}
 
-        <section class="add-task">
-            <form action="{{ url_for('add') }}" method="POST">
-                <input type="text" name="title" placeholder="Enter new task..." required>
-                <button type="submit">Add Task</button>
-            </form>
-        </section>
+{% block title %}Todo List{% endblock %}
 
-        <section class="task-list">
-            {% if tasks %}
-                <ul>
-                    {% for task in tasks %}
-                        <li class="task-item">
-                            <span>{{ task.title }}</span>
-                            <a href="{{ url_for('delete', task_id=task.id) }}" class="delete-btn">Delete</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="no-tasks">No tasks yet. Add some tasks above!</p>
-            {% endif %}
-        </section>
+{% block content %}
+<header>
+    <h1>Welcome, {{ username }}</h1>
+    <div class="header-buttons">
+        <button onclick="confirmDeleteAccount()" class="delete-account-btn">Delete Account</button>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
     </div>
-</body>
-</html>
+</header>
+
+<section class="add-task">
+    <form action="{{ url_for('add') }}" method="POST">
+        <input type="text" name="title" placeholder="Enter new task..." required>
+        <button type="submit">Add Task</button>
+    </form>
+</section>
+
+<section class="task-list">
+    {% if tasks %}
+        <h2>Active Tasks</h2>
+        <ul>
+            {% for task in tasks if not task.is_completed %}
+                <li class="task-item">
+                    <div class="task-content">
+                        <input type="checkbox" onclick="toggleTask('{{ task.id }}')" class="task-checkbox">
+                        <span>{{ task.title }}</span>
+                    </div>
+                    <a href="{{ url_for('delete', task_id=task.id) }}" class="delete-btn">Delete</a>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <h2>Completed Tasks</h2>
+        <ul class="completed-tasks">
+            {% for task in tasks if task.is_completed %}
+                <li class="task-item completed">
+                    <div class="task-content">
+                        <input type="checkbox" onclick="toggleTask('{{ task.id }}')" checked class="task-checkbox">
+                        <span>{{ task.title }}</span>
+                    </div>
+                    <a href="{{ url_for('delete', task_id=task.id) }}" class="delete-btn">Delete</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-tasks">No tasks yet. Add some tasks above!</p>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    function toggleTask(taskId) {
+        fetch(`/toggle/${taskId}`, {method: 'POST'})
+            .then(response => response.ok && window.location.reload())
+            .catch(error => console.error('Error:', error));
+    }
+
+    function confirmDeleteAccount() {
+        if (confirm('Are you sure you want to delete your account? This cannot be undone!')) {
+            fetch('/delete_account', {method: 'POST'})
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '{{ url_for("login") }}';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }
+</script>
+{% endblock %}

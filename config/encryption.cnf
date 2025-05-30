@@ -1,0 +1,10 @@
+[mysqld]
+plugin_load_add=file_key_management
+file_key_management=ON
+file_key_management_filename=/etc/mysql/encryption/keyfile
+innodb_encrypt_tables=ON
+innodb_tablespaces_encryption=ON
+innodb_encryption_threads=4
+encrypt_binlog=ON
+encrypt_tmp_files=ON
+innodb_encrypt_log=ON
