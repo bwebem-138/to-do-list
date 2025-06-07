@@ -69,8 +69,6 @@ sudo ./install.sh
 
 ```
 to-do-list/
-```
-to-do-list/
 ├── app/                    # Application code
 │   ├── static/            # Static assets
 │   │   ├── styles.css
@@ -99,7 +97,6 @@ to-do-list/
 ├── .env              # Environment variables (generated)
 ├── .gitignore       # Git ignore rules
 └── README.md        # Project documentation
-```
 ```
 
 ## 🔧 Troubleshooting

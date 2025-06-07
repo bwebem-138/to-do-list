@@ -34,10 +34,10 @@ app.secret_key = app.config['SECRET_KEY']
 
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.environ.get('MYSQL_HOST', 'mariadb'),
-        user=os.environ.get('MYSQL_USER', 'todo_user'),
-        password=os.environ.get('MYSQL_PASSWORD', 'todopass123'),
-        database=os.environ.get('MYSQL_DATABASE', 'todo_db')
+        host=app.config['MYSQL_HOST'],
+        user=app.config['MYSQL_USER'],
+        password=app.config['MYSQL_PASSWORD'],
+        database=app.config['MYSQL_DB']
     )
 
 def hash_username(username):
