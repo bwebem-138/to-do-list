@@ -12,10 +12,17 @@ ENV/
 
 # Environment Variables
 .env
+*.env
 
 # SSL Certificate Directory
 ssl/*.pem
 ssl/*.pfx
+ssl/*
 
-# Database Security
+# Database Security & Encryption
+config/mysql/
+config/mysql/encryption/
 config/mysql/encryption/keyfile
+config/
+**/keyfile
+

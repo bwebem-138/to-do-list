@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -29,6 +29,8 @@ ssl_context = (
     app.config['SSL_CERT_PATH'],
     app.config['SSL_KEY_PATH']
 )
+
+app.secret_key = app.config['SECRET_KEY']
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -95,18 +97,23 @@ def toggle(task_id):
     conn.close()
     return redirect(url_for('tasks'))
 
-@app.route('/delete/<int:task_id>')
+@app.route('/delete/<int:task_id>', methods=['POST'])
 def delete(task_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.callproc('delete_task', [task_id])
-    conn.commit()
-    cursor.close()
-    conn.close()
-    flash('Task deleted successfully!', 'success')
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.callproc('delete_task', [task_id])
+        conn.commit()
+        cursor.close()
+        conn.close()
+        flash('Task deleted successfully!', 'success')
+    except Exception as e:
+        flash('Error deleting task!', 'error')
+        print(f"Error deleting task: {e}")
+    
     return redirect(url_for('tasks'))
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -201,6 +208,26 @@ def delete_account():
     session.clear()
     flash('Your account has been deleted', 'info')
     return redirect(url_for('login'))
+
+@app.route('/edit/<int:task_id>', methods=['POST'])
+def edit_task(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    new_title = request.form.get('new_title')
+    if new_title:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.callproc('edit_task', [task_id, new_title.encode('utf-8')])
+            conn.commit()
+            cursor.close()
+            conn.close()
+            flash('Task updated successfully!', 'success')
+        except Exception as e:
+            flash('Error updating task!', 'error')
+            print(f"Error updating task: {e}")
+    return redirect(url_for('tasks'))
 
 def validate_password(password):
     """Password must be at least 12 characters and contain upper, lower, number and special char"""

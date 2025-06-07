@@ -9,6 +9,7 @@ DROP PROCEDURE IF EXISTS get_tasks;
 DROP PROCEDURE IF EXISTS add_task;
 DROP PROCEDURE IF EXISTS delete_task;
 DROP PROCEDURE IF EXISTS toggle_task;
+DROP PROCEDURE IF EXISTS edit_task;
 DROP PROCEDURE IF EXISTS delete_account;
 
 -- Create tables
@@ -69,6 +70,13 @@ END //
 CREATE PROCEDURE delete_task(IN p_task_id INT)
 BEGIN
     DELETE FROM tasks WHERE id = p_task_id;
+END //
+
+CREATE PROCEDURE edit_task(IN p_task_id INT, IN p_title BLOB)
+BEGIN
+    UPDATE tasks 
+    SET title = p_title 
+    WHERE id = p_task_id;
 END //
 
 CREATE PROCEDURE delete_account(IN p_user_id INT)

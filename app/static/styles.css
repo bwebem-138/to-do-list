@@ -5,6 +5,18 @@ body {
     padding: 20px;
 }
 
+header {
+    padding: 20px 0;
+    margin-bottom: 20px;
+    background: none;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 form {
     margin: 20px 0;
 }
@@ -37,109 +49,209 @@ label {
     width: 100px;
 }
 
-button {
+/* Button base styling */
+button, .btn {
     padding: 8px 15px;
-    background-color: #6B46C1; /* Changed to purple */
-    color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-weight: 500;
+    min-width: 80px;
+    transition: opacity 0.2s ease;
 }
 
-button:hover {
-    background-color: #553C9A; /* Darker purple */
-}
-
-.task-list {
-    list-style: none;
-    padding: 0;
-}
-
-.task-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #F3E8FF; /* Light purple background */
-    margin-bottom: 5px;
+/* Standard button styling */
+.edit-btn, .delete-btn {
+    padding: 8px 15px;
+    border: none;
     border-radius: 4px;
-}
-
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #9F7AEA; /* Purple border */
-}
-
-.logout-btn {
-    padding: 8px 16px;
-    background-color: #dc3545;
+    cursor: pointer;
     color: white;
-    text-decoration: none;
-    border-radius: 4px;
-}
-
-.add-task form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.add-task input[type="text"] {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.task-list ul {
-    list-style: none;
-    padding: 0;
-}
-
-.task-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #F3E8FF; /* Light purple */
-    margin-bottom: 5px;
-    border-radius: 4px;
+    min-width: 80px;
+    font-size: 1em;
+    background-color: #4CAF50;  /* Green for edit */
 }
 
 .delete-btn {
-    padding: 4px 8px;
-    background-color: #dc3545;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 0.9em;
+    background-color: #dc3545;  /* Red for delete */
 }
 
-.no-tasks {
-    text-align: center;
-    color: #6c757d;
-    margin-top: 20px;
+/* Login/Register buttons */
+.login-btn, .register-btn {
+    background-color: #2196F3;
+    color: white;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin: 8px 0;
+}
+
+/* Add task button - make it purple */
+.add-task button {
+    background-color: #805AD5;  /* Purple color */
+    color: white;
+    padding: 12px 20px;
+}
+
+.add-task button:hover {
+    background-color: #6B46C1;  /* Darker purple on hover */
+}
+
+/* Hover effects */
+button:hover, .btn:hover {
+    opacity: 0.9;
+}
+
+/* Task actions alignment */
+.task-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Remove focus outline */
+button:focus, .btn:focus {
+    outline: none;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* Header buttons */
+.header-buttons .delete-account-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.header-buttons .logout-btn {
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* Task item layout */
+.task-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
 }
 
 .task-content {
     display: flex;
     align-items: center;
-    gap: 10px;
+    width: 100%;
 }
 
-.task-checkbox {
-    width: 18px;
-    height: 18px;
+.task-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.task-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: auto; /* This pushes the buttons to the right */
+}
+
+.task-list {
+    max-width: 800px;
+    margin: 0 auto;
+    list-style: none;
+    padding: 0;
+}
+
+.task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.task-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.task-text input[type="checkbox"] {
+    margin: 0;
     cursor: pointer;
+}
+
+.task-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: auto; /* This pushes the buttons to the right */
+}
+
+/* Add task form styling */
+.add-task form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.add-task input[type="text"] {
+    flex-grow: 1;
+}
+
+.add-task button {
+    background-color: #805AD5;
+    color: white;
+    padding: 12px 20px;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+/* Task action buttons - consistent styling */
+.edit-btn, .delete-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    min-width: 80px;
+    font-size: 1em;
+    background-color: #4CAF50;  /* Green for edit */
+}
+
+.delete-btn {
+    background-color: #dc3545;  /* Red for delete */
+}
+
+/* Remove the problematic edit button styles */
+.edit-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Remove these conflicting styles that were causing issues */
+.edit-btn:hover {
+    color: #45a049;
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    color: #4CAF50;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 5px;
 }
 
 .completed {
@@ -223,21 +335,25 @@ h2 {
 .header-buttons {
     display: flex;
     gap: 10px;
-    align-items: center;
 }
 
-.delete-account-btn {
+.delete-account-btn, .logout-btn {
     padding: 8px 16px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
 }
 
-.delete-account-btn:hover {
-    background-color: #c82333;
+.delete-account-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+.logout-btn {
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
 }
 
 @keyframes fadeOut {
@@ -292,4 +408,192 @@ input:valid {
     margin-bottom: 24px;
     text-align: center;
     font-size: 1.5em;
+}
+
+.task-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.edit-btn {
+    background: none;
+    border: none;
+    color: #4CAF50;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 5px;
+}
+
+.edit-btn:hover {
+    color: #45a049;
+}
+
+/* Edit form styling */
+.edit-form {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.edit-form form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.edit-form input[type="text"] {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.edit-form .button-group {
+    display: flex;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.save-btn, .cancel-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    min-width: 80px;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+}
+
+.cancel-btn {
+    background-color: #dc3545;
+}
+
+.edit-form.hidden {
+    display: none;
+}
+
+.edit-form {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.edit-form form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.edit-form input[type="text"] {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.edit-form .button-group {
+    display: flex;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.save-btn, .cancel-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    min-width: 80px;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+}
+
+.cancel-btn {
+    background-color: #dc3545;
+}
+
+.edit-form.hidden {
+    display: none;
+}
+
+.edit-form {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.edit-form form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.edit-form input[type="text"] {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.edit-form .button-group {
+    display: flex;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.save-btn, .cancel-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    min-width: 80px;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+}
+
+.cancel-btn {
+    background-color: #dc3545;
+}
+
+.edit-form.hidden {
+    display: none;
+}
+
+.task-item.completed .task-text {
+    text-decoration: line-through;
+    color: #666;
+}
+
+.support-email {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+ }
+ 
+.support-email a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.support-email::before {
+    content: "Support: ";
+   color: #6c757d;
 }

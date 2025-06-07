@@ -22,133 +22,115 @@ A secure task management application built with Flask and MariaDB, featuring enc
 | Containerization | Docker |
 | Frontend | HTML/CSS |
 
-## ⚠️ Security Notice
+## ⚙️ Prerequisites
 
-**CRITICAL:** Before deploying this application, run the automated setup script which will:
-- Generate secure random passwords
-- Create the encryption keyfile
-- Set up MariaDB encryption configuration
-- Generate the .env file with all required variables
-- Create self-signed SSL certificates
-- Configure HTTPS support
-- Start Docker containers
+### Windows
+- Docker Desktop
+- Git
+- OpenSSL (`choco install openssl`)
+- PowerShell 5.0+
 
-## 📦 Installation
+### Linux
+- Docker Engine & Compose
+- Git
+- OpenSSL
+- Bash
 
-1. Clone the repository:
-   ```powershell
-   git clone https://github.com/bwebem-138/to-do-list.git
-   cd to-do-list
-   ```
+## 📥 Installation
 
-2. Run the setup script as Administrator:
-   ```powershell (admin)
-   .\setup-automated.ps1
-   ```
+### Windows
 
-   ⚠️ **Important Setup Notes:**
-   - Pay careful attention to the certificate password when it's displayed
-   - Copy the password exactly as shown - it will be needed for the 'Import Password' prompt
-   - If you enter the wrong password, delete the `ssl` folder and `.env` file, then run the setup script again
+```powershell
+# Clone and enter directory
+git clone https://github.com/yourusername/to-do-list.git
+cd to-do-list
 
-   🐳 **Docker Container Notes:**
-   - The initial `docker compose up` might show an error for `todo_mariadb` - this is normal
-   - The database container needs time to initialize before the web container can connect
-   - After setup completes, manually restart the web container:
-     ```powershell
-     docker compose up -d todo_flask
-     ```
+# Create required directories
+mkdir -p config/mysql/encryption ssl
 
-3. Access the application:
-   - Open https://localhost:443 in your browser
-   - Use the generated credentials from your `.env` file
+# Run installer (as Administrator)
+Set-ExecutionPolicy Bypass -Scope Process
+.\install.sh
+```
 
-## 🔑 Certificate Management
+### Linux
 
-If you need to regenerate certificates:
-1. Delete the `ssl` folder and `.env` file
-2. Run `.\setup-automated.ps1` again
-3. Make sure to save the new certificate password when it's displayed
+```bash
+# Clone and enter directory
+git clone https://github.com/yourusername/to-do-list.git
+cd to-do-list
+
+# Make script executable and run
+chmod +x install.sh
+sudo ./install.sh
+```
 
 ## 🏗️ Project Structure
 
 ```
 to-do-list/
-├── app/                        # Application code
-│   ├── static/                # Static assets
-│   │   └── styles.css
-│   ├── templates/             # HTML templates
+```
+to-do-list/
+├── app/                    # Application code
+│   ├── static/            # Static assets
+│   │   ├── styles.css
+│   │   └── js/           # JavaScript files
+│   │       └── script.js
+│   ├── templates/         # HTML templates
 │   │   ├── base.html
 │   │   ├── login.html
 │   │   ├── register.html
 │   │   └── tasks.html
-│   ├── app.py                # Main application file
-│   └── requirements.txt      # Python dependencies
-├── config/                   # Configuration directory
-│   ├── mysql/               # MySQL specific config
-│   │   └── encryption/     # Encryption settings
-│   │       └── keyfile    # Database encryption key
-│   └── encryption.cnf     # MariaDB encryption config
-├── ssl/                    # SSL certificates
-│   ├── cert.pem           # Public certificate
-│   ├── key.pem            # Private key
-│   └── certificate.pfx    # PKCS#12 bundle
-├── database.sql           # Database schema
-├── docker-compose.yml     # Docker configuration
-├── Dockerfile            # Application container
-├── generate-env.ps1     # Security setup script
-├── generate-certs.ps1   # SSL certificate generator
-├── .env                 # Environment variables (generated)
-├── .gitignore          # Git ignore rules
-└── README.md           # Project documentation
+│   ├── app.py            # Main application file
+│   └── requirements.txt  # Python dependencies
+├── config/               # Configuration directory
+│   ├── mysql/           # MySQL specific config
+│   │   └── encryption/  # Encryption settings
+│   │       └── keyfile  # Database encryption key
+│   └── encryption.cnf   # MariaDB encryption config
+├── ssl/                 # SSL certificates
+│   ├── cert.pem         # Public certificate
+│   ├── key.pem          # Private key
+├── database.sql         # Database schema
+├── docker-compose.yml   # Docker configuration
+├── Dockerfile          # Application container
+├── generate-certs.ps1  # SSL certificate generator
+├── install.sh         # Installation script
+├── .env              # Environment variables (generated)
+├── .gitignore       # Git ignore rules
+└── README.md        # Project documentation
+```
 ```
 
-## ⚙️ Configuration Files
+## 🔧 Troubleshooting
 
-### Database Encryption
-- `config/mysql/encryption/keyfile`: Contains the encryption key for MariaDB
-- `config/encryption.cnf`: MariaDB encryption configuration
+### Database Reset
 
-### Environment Variables
-The `.env` file (generated by generate-env.ps1) contains:
-```ini
-# Database Configuration
-MYSQL_HOST=db
-MYSQL_ROOT_PASSWORD=<generated>
-MYSQL_USER=todo_user
-MYSQL_PASSWORD=<generated>
-MYSQL_DATABASE=todo_db
-
-# Flask Configuration
-FLASK_APP=app.py
-FLASK_SECRET_KEY=<generated>
-FLASK_DEBUG=0
-FLASK_HOST=0.0.0.0
-FLASK_PORT=443
-
-# SSL Configuration
-SSL_CERT_PATH=/ssl/cert.pem
-SSL_KEY_PATH=/ssl/key.pem
-SSL_PFX_PATH=/ssl/certificate.pfx
-CERT_PASSWORD=<generated>
-CERT_DOMAIN=todolist.ch
-CERT_FRIENDLY_NAME=todolist.ch SSL Certificate
-
-# Encryption Configuration
-DB_ENCRYPTION_KEY=<generated>
-
-# Domain Configuration
-DOMAIN_NAME=todolist.ch
+Windows:
+```powershell
+docker compose down -v
+Remove-Item -Recurse -Force mariadb_data, config/mysql/encryption
+docker compose up -d
 ```
 
-## 🌐 Access
+Linux:
+```bash
+docker compose down -v
+sudo rm -rf mariadb_data config/mysql/encryption
+docker compose up -d
+```
 
-- HTTPS: https://localhost:443
-- Domain: https://yourdomain.com (if configured)
+### Web Access Issues
+```bash
+docker compose restart web
+```
+
+## ⚠️ Security Notes
+
+- Replace default credentials before deployment
+- Never commit sensitive files (.env, keyfile, certificates)
+- This is an educational example - review security before production use
 
 ## ⚠️ Disclaimer
 
 This code is provided as an educational example and should not be used in production environments without proper security review.
-
-*Remember to replace all default credentials before deployment!*
-*Remember to never commit sensitive files (.env, keyfile, SSL certificates) to version control!*
